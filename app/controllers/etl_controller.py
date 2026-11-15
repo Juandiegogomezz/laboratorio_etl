@@ -1,4 +1,6 @@
 from fastapi import APIRouter, HTTPException
+from pymongo.errors import PyMongoError
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.services import etl_service
 from app.views.schemas import TransformacionResponse, ExtraccionRequest, ExtraccionResponse
@@ -10,6 +12,10 @@ router = APIRouter(prefix="/api/v1/etl", tags=["ETL"])
 def transformar():
     try:
         procesados = etl_service.transformar()
+    except PyMongoError as error:
+        raise HTTPException(status_code=503, detail=f"No se pudo leer MongoDB: {error}")
+    except SQLAlchemyError as error:
+        raise HTTPException(status_code=500, detail=f"Error al cargar en MySQL: {error}")    
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"Error en la transformación: {error}")
 
