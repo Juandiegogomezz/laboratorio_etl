@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
 from sqlalchemy.dialects.mysql import insert
+import requests
 
+from app import config
 from app.database import Base, engine, get_mongo_collection
 from app.models.entidad_sql import Personaje
 
@@ -88,3 +90,51 @@ def transformar() -> int:
         conexion.execute(consulta)
 
     return len(registros)
+
+
+
+PAGE_SIZE = 50
+
+
+def extraer(cantidad: int) -> dict:
+    """E (Extract): descarga personajes de la API y los guarda en Mongo con upsert (PK natural = id)."""
+    coleccion = get_mongo_collection()
+    nuevos = 0
+    ya_existentes = 0
+    recolectados = 0
+    pagina = 1
+
+    while recolectados < cantidad:
+        respuesta = requests.get(
+            config.API_URL,
+            params={"page": pagina, "page_size": PAGE_SIZE},
+            timeout=15,
+        )
+        respuesta.raise_for_status()
+        cuerpo = respuesta.json()
+        personajes = cuerpo.get("data", [])
+
+        if not personajes:
+            break  # ya no hay más páginas
+
+        for personaje in personajes:
+            if recolectados >= cantidad:
+                break
+
+            personaje["_id"] = personaje["id"]  # PK natural (slug), no ObjectId de Mongo
+
+            ya_existia = coleccion.find_one({"_id": personaje["_id"]}) is not None
+            coleccion.replace_one({"_id": personaje["_id"]}, personaje, upsert=True)
+
+            if ya_existia:
+                ya_existentes += 1
+            else:
+                nuevos += 1
+            recolectados += 1
+
+        total_paginas = cuerpo.get("meta", {}).get("total_pages", pagina)
+        if pagina >= total_paginas:
+            break
+        pagina += 1
+
+    return {"nuevos": nuevos, "ya_existentes": ya_existentes}

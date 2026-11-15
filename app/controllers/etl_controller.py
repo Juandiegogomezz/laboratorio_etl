@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from app.services import etl_service
-from app.views.schemas import TransformacionResponse
+from app.views.schemas import TransformacionResponse, ExtraccionRequest, ExtraccionResponse
 
 router = APIRouter(prefix="/api/v1/etl", tags=["ETL"])
 
@@ -24,4 +24,19 @@ def transformar():
         registros_procesados=procesados,
         tabla_destino="personajes_hp",
         status=200,
+    )
+
+@router.post("/extraer", response_model=ExtraccionResponse, status_code=201)
+def extraer(payload: ExtraccionRequest):
+    try:
+        resultado = etl_service.extraer(payload.cantidad)
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=f"Error en la extracción: {error}")
+
+    return ExtraccionResponse(
+        mensaje="Datos extraídos exitosamente",
+        nuevos=resultado["nuevos"],
+        ya_existentes=resultado["ya_existentes"],
+        fuente="Hogwarts API",
+        status=201,
     )
