@@ -60,6 +60,9 @@ def limpiar_datos(documentos: list) -> pd.DataFrame:
     df["nombre"] = df["nombre"].astype(str).str.strip()
     for columna in COLUMNAS_TEXTO:
         df[columna] = df[columna].fillna("N/A").astype(str).str.strip()
+    
+    # Unificar mayúsculas en género (male, Male -> Male)
+    df["genero"] = df["genero"].str.title()
 
     # Fecha: "31 July 1980" -> 1980-07-31. Si es aproximada o vacía queda NULL
     df["fecha_nacimiento"] = pd.to_datetime(
