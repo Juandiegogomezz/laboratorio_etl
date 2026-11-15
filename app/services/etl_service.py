@@ -85,19 +85,22 @@ def transformar() -> int:
     df = limpiar_datos(documentos)
     registros = df.to_dict(orient="records")
 
-    # L: crear la tabla si no existe (conserva la PK) y hacer upsert
+    # L: crear la tabla si no existe (conserva la PK) y hacer upsert por lotes
     Base.metadata.create_all(bind=engine)
     tabla = Personaje.__table__
-    consulta = insert(tabla).values(registros)
-    columnas_a_actualizar = {
-        col.name: consulta.inserted[col.name]
-        for col in tabla.columns
-        if col.name != "id_personaje"
-    }
-    consulta = consulta.on_duplicate_key_update(**columnas_a_actualizar)
+    tamano_lote = 500
 
     with engine.begin() as conexion:
-        conexion.execute(consulta)
+        for inicio in range(0, len(registros), tamano_lote):
+            lote = registros[inicio:inicio + tamano_lote]
+            consulta = insert(tabla).values(lote)
+            columnas_a_actualizar = {
+                col.name: consulta.inserted[col.name]
+                for col in tabla.columns
+                if col.name != "id_personaje"
+            }
+            consulta = consulta.on_duplicate_key_update(**columnas_a_actualizar)
+            conexion.execute(consulta)
 
     return len(registros)
 
