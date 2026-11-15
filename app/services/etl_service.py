@@ -52,6 +52,9 @@ def limpiar_datos(documentos: list) -> pd.DataFrame:
     
     # Descartar registros sin id o sin nombre (no se pueden cargar)
     df = df.dropna(subset=["id_personaje", "nombre"])
+    
+    # Quitar personajes repetidos dentro del mismo lote
+    df = df.drop_duplicates(subset="id_personaje")
 
     # Texto: quitar espacios; categóricas vacías -> "N/A"
     df["nombre"] = df["nombre"].astype(str).str.strip()
