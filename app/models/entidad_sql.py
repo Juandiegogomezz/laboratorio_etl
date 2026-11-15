@@ -29,3 +29,7 @@ class Personaje(Base):
     # Derivadas
     total_trabajos = Column(Integer, nullable=True)  # len(jobs)
     esta_vivo = Column(Boolean, nullable=True)       # True si died viene vacío
+
+
+    def __repr__(self):
+        return f"<Personaje {self.id_personaje}: {self.nombre}>"    
