@@ -49,6 +49,10 @@ def limpiar_datos(documentos: list) -> pd.DataFrame:
     df = df[list(MAPEO_COLUMNAS) + ["total_trabajos", "esta_vivo"]]
     df = df.rename(columns=MAPEO_COLUMNAS)
 
+    
+    # Descartar registros sin id o sin nombre (no se pueden cargar)
+    df = df.dropna(subset=["id_personaje", "nombre"])
+
     # Texto: quitar espacios; categóricas vacías -> "N/A"
     df["nombre"] = df["nombre"].astype(str).str.strip()
     for columna in COLUMNAS_TEXTO:
