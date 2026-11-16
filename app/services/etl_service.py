@@ -139,7 +139,7 @@ def extraer(cantidad: int) -> dict:
 
     return {"nuevos": nuevos, "ya_existentes": ya_existentes}
 
-    def reset() -> dict:
+def reset() -> dict: 
     """C (Reset): borra todo Mongo y vacía (TRUNCATE) la tabla MySQL, sin eliminarla."""
     coleccion = get_mongo_collection()
     mongo_eliminados = coleccion.delete_many({}).deleted_count
