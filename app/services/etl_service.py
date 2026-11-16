@@ -138,3 +138,21 @@ def extraer(cantidad: int) -> dict:
         pagina += 1
 
     return {"nuevos": nuevos, "ya_existentes": ya_existentes}
+
+    def reset() -> dict:
+    """C (Reset): borra todo Mongo y vacía (TRUNCATE) la tabla MySQL, sin eliminarla."""
+    coleccion = get_mongo_collection()
+    mongo_eliminados = coleccion.delete_many({}).deleted_count
+
+    Base.metadata.create_all(bind=engine)  # por si la tabla aún no existe
+    tabla = Personaje.__table__
+
+    with engine.begin() as conexion:
+        resultado = conexion.execute(tabla.select())
+        mysql_eliminadas = len(resultado.fetchall())
+        conexion.execute(tabla.delete())  # TRUNCATE lógico vía DELETE (conserva la tabla)
+
+    return {
+        "mongo_docs_eliminados": mongo_eliminados,
+        "mysql_rows_eliminadas": mysql_eliminadas,
+    }
