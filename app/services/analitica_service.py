@@ -125,12 +125,24 @@ def analizar_fecha(nombre: str, serie: pd.Series) -> dict:
     }
 
 
+def analizar_booleana(nombre: str, serie: pd.Series) -> dict:
+    """Cuenta verdaderos y falsos. MySQL guarda BOOLEAN como TINYINT(1): llega como 1 y 0."""
+    return {
+        "columna": nombre,
+        "tipo": "booleana",
+        "true": int((serie == 1).sum()),
+        "false": int((serie == 0).sum()),
+        "nulos": int(serie.isna().sum()),
+    }
+
+
 # Cada tipo detectado se asocia con la función que lo analiza
 ANALIZADORES = {
     "categorica": analizar_categorica,
     "texto": analizar_texto,
     "numerica": analizar_numerica,
     "fecha": analizar_fecha,
+    "booleana": analizar_booleana,
 }
 
 
@@ -147,6 +159,4 @@ def analizar_columna(nombre: str) -> dict:
         )
 
     tipo = detectar_tipo(nombre, serie)
-    if tipo not in ANALIZADORES:
-        raise NotImplementedError(f"Tipo detectado: {tipo}. El análisis de este tipo está en construcción")
     return ANALIZADORES[tipo](nombre, serie)
