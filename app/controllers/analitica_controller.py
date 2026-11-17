@@ -18,5 +18,7 @@ def analizar_columna(nombre: str):
     except analitica_service.ColumnaNoExisteError as error:
         cuerpo = ErrorColumnaResponse(mensaje=str(error), columnas_validas=error.columnas_validas)
         return JSONResponse(status_code=400, content=cuerpo.model_dump())
+    except analitica_service.TablaVaciaError as error:
+        raise HTTPException(status_code=404, detail=str(error))
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"Error en el análisis: {error}")
