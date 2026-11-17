@@ -82,3 +82,71 @@ def analizar_categorica(nombre: str, serie: pd.Series) -> dict:
 
 
 def analizar_texto(nombre: str, serie: pd.Series) -> dict:
+    """Para texto libre solo tiene sentido contar valores distintos y nulos."""
+    return {
+        "columna": nombre,
+        "tipo": "texto",
+        "valores_unicos": int(serie.nunique()),
+        "nulos": int(serie.isna().sum()),
+    }
+
+
+def analizar_numerica(nombre: str, serie: pd.Series) -> dict:
+    """Estadísticas descriptivas calculadas solo sobre los valores que no son nulos."""
+    datos = serie.dropna()
+    return {
+        "columna": nombre,
+        "tipo": "numerica",
+        "min": redondear(datos.min()),
+        "max": redondear(datos.max()),
+        "promedio": redondear(datos.mean()),
+        "mediana": redondear(datos.median()),
+        "desviacion_std": redondear(datos.std()),
+        "nulos": int(serie.isna().sum()),
+    }
+
+
+def analizar_fecha(nombre: str, serie: pd.Series) -> dict:
+    """Fecha mínima, máxima y días entre ellas; las fechas no válidas quedaron como NULL."""
+    datos = serie.dropna()
+    if datos.empty:
+        minimo = maximo = rango = None
+    else:
+        minimo = datos.min().date()
+        maximo = datos.max().date()
+        rango = (maximo - minimo).days
+    return {
+        "columna": nombre,
+        "tipo": "fecha",
+        "min": minimo,
+        "max": maximo,
+        "rango_dias": rango,
+        "nulos": int(serie.isna().sum()),
+    }
+
+
+# Cada tipo detectado se asocia con la función que lo analiza
+ANALIZADORES = {
+    "categorica": analizar_categorica,
+    "texto": analizar_texto,
+    "numerica": analizar_numerica,
+    "fecha": analizar_fecha,
+}
+
+
+def analizar_columna(nombre: str) -> dict:
+    """Valida la columna, la lee de MySQL, detecta su tipo y aplica el análisis que le corresponde."""
+    columnas = obtener_columnas_validas()
+    if nombre not in columnas:
+        raise ColumnaNoExisteError(nombre, columnas)
+
+    serie = leer_columna(nombre)
+    if serie.empty:
+        raise TablaVaciaError(
+            f"La tabla {TABLA.name} está vacía. Ejecuta primero POST /api/v1/etl/transformar"
+        )
+
+    tipo = detectar_tipo(nombre, serie)
+    if tipo not in ANALIZADORES:
+        raise NotImplementedError(f"Tipo detectado: {tipo}. El análisis de este tipo está en construcción")
+    return ANALIZADORES[tipo](nombre, serie)
