@@ -60,6 +60,11 @@ def detectar_tipo(nombre: str, serie: pd.Series) -> str:
     return "categorica"
 
 
+def redondear(valor):
+    """Redondea a 2 decimales; si el valor no existe (NaN) devuelve None, que en JSON es null."""
+    return None if pd.isna(valor) else round(float(valor), 2)
+
+
 def analizar_categorica(nombre: str, serie: pd.Series) -> dict:
     """Distribución de valores sin contar los "N/A", que se reportan aparte como sin_dato."""
     sin_dato = int((serie == VALOR_SIN_DATO).sum())
@@ -77,35 +82,3 @@ def analizar_categorica(nombre: str, serie: pd.Series) -> dict:
 
 
 def analizar_texto(nombre: str, serie: pd.Series) -> dict:
-    """Para texto libre solo tiene sentido contar valores distintos y nulos."""
-    return {
-        "columna": nombre,
-        "tipo": "texto",
-        "valores_unicos": int(serie.nunique()),
-        "nulos": int(serie.isna().sum()),
-    }
-
-
-# Cada tipo detectado se asocia con la función que lo analiza
-ANALIZADORES = {
-    "categorica": analizar_categorica,
-    "texto": analizar_texto,
-}
-
-
-def analizar_columna(nombre: str) -> dict:
-    """Valida la columna, la lee de MySQL, detecta su tipo y aplica el análisis que le corresponde."""
-    columnas = obtener_columnas_validas()
-    if nombre not in columnas:
-        raise ColumnaNoExisteError(nombre, columnas)
-
-    serie = leer_columna(nombre)
-    if serie.empty:
-        raise TablaVaciaError(
-            f"La tabla {TABLA.name} está vacía. Ejecuta primero POST /api/v1/etl/transformar"
-        )
-
-    tipo = detectar_tipo(nombre, serie)
-    if tipo not in ANALIZADORES:
-        raise NotImplementedError(f"Tipo detectado: {tipo}. El análisis de este tipo está en construcción")
-    return ANALIZADORES[tipo](nombre, serie)
