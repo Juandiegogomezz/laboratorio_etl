@@ -10,6 +10,9 @@ TABLA = Personaje.__table__
 # Si al menos este porcentaje de valores es distinto, la columna se trata como texto libre
 UMBRAL_TEXTO_LIBRE = 0.9
 
+# Valor con el que la transformación rellena los textos vacíos
+VALOR_SIN_DATO = "N/A"
+
 
 class ColumnaNoExisteError(Exception):
     """Se lanza cuando piden una columna que no está en la tabla."""
@@ -57,6 +60,39 @@ def detectar_tipo(nombre: str, serie: pd.Series) -> str:
     return "categorica"
 
 
+def analizar_categorica(nombre: str, serie: pd.Series) -> dict:
+    """Distribución de valores sin contar los "N/A", que se reportan aparte como sin_dato."""
+    sin_dato = int((serie == VALOR_SIN_DATO).sum())
+    con_dato = serie[serie.notna() & (serie != VALOR_SIN_DATO)]
+    distribucion = con_dato.value_counts()
+    return {
+        "columna": nombre,
+        "tipo": "categorica",
+        "valores_unicos": int(con_dato.nunique()),
+        "distribucion": {str(valor): int(cantidad) for valor, cantidad in distribucion.items()},
+        "valor_mas_comun": str(distribucion.index[0]) if not distribucion.empty else None,
+        "sin_dato": sin_dato,
+        "nulos": int(serie.isna().sum()),
+    }
+
+
+def analizar_texto(nombre: str, serie: pd.Series) -> dict:
+    """Para texto libre solo tiene sentido contar valores distintos y nulos."""
+    return {
+        "columna": nombre,
+        "tipo": "texto",
+        "valores_unicos": int(serie.nunique()),
+        "nulos": int(serie.isna().sum()),
+    }
+
+
+# Cada tipo detectado se asocia con la función que lo analiza
+ANALIZADORES = {
+    "categorica": analizar_categorica,
+    "texto": analizar_texto,
+}
+
+
 def analizar_columna(nombre: str) -> dict:
     """Valida la columna, la lee de MySQL, detecta su tipo y aplica el análisis que le corresponde."""
     columnas = obtener_columnas_validas()
@@ -70,4 +106,6 @@ def analizar_columna(nombre: str) -> dict:
         )
 
     tipo = detectar_tipo(nombre, serie)
-    raise NotImplementedError(f"Tipo detectado: {tipo}. El análisis de este tipo está en construcción")
+    if tipo not in ANALIZADORES:
+        raise NotImplementedError(f"Tipo detectado: {tipo}. El análisis de este tipo está en construcción")
+    return ANALIZADORES[tipo](nombre, serie)
