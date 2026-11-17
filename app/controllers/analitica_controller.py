@@ -10,7 +10,16 @@ router = APIRouter(prefix="/api/v1/analitica", tags=["Analítica"])
 @router.get(
     "/columna/{nombre}",
     response_model=AnalisisColumnaResponse,
-    responses={400: {"model": ErrorColumnaResponse}},
+    summary="Análisis estadístico de una columna de la tabla SQL",
+    description=(
+        "Detecta dinámicamente el tipo de la columna a partir del modelo SQLAlchemy "
+        "(categórica, texto, numérica, fecha o booleana) y devuelve el análisis que le corresponde."
+    ),
+    responses={
+        400: {"model": ErrorColumnaResponse, "description": "La columna no existe en la tabla"},
+        404: {"description": "La tabla está vacía; primero hay que ejecutar /etl/transformar"},
+        500: {"description": "Error inesperado al leer o analizar la columna"},
+    },
 )
 def analizar_columna(nombre: str):
     try:
