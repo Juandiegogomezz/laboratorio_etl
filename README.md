@@ -1,6 +1,11 @@
 # laboratorio_etl
 desarrollo de api con todos los personajes de harry potter
 
+## Juan Diego — Extracción y Reset
+- Estructura base del proyecto (MVC + Services), `config.py`, `database.py` y `main.py`.
+- Endpoint `POST /api/v1/etl/extraer`: consume la Hogwarts API por páginas y guarda en MongoDB con el `id` original como `_id` (upsert, idempotente).
+- Endpoint `DELETE /api/v1/etl/reset`: limpia MongoDB (`delete_many`) y MySQL (`TRUNCATE`).
+
 ## Daniela Salazar — Transformación y carga
 - Modelo `Personaje` (tabla `personajes_hp`, 12 columnas, PK = `_id` de Mongo).
 - Endpoint `POST /api/v1/etl/transformar`: limpieza con Pandas y upsert en MySQL.
