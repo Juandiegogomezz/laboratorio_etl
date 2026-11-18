@@ -40,18 +40,25 @@ def obtener_perfil_dual(id: str):
     """Retorna el perfil dual de un personaje consultando Mongo y MySQL."""
     id = id.strip().lower()
     
-    mongo_data = consultar_mongo(id)
-    sql_data = consultar_mysql(id)
-    
+    try:
+        mongo_data = consultar_mongo(id)
+    except Exception as e:
+        mongo_data = None
+
+    try:
+        sql_data = consultar_mysql(id)
+    except Exception as e:
+        sql_data = None
+
     if not mongo_data and not sql_data:
         return None
-    
+
     warning = None
     if mongo_data and not sql_data:
         warning = "Personaje existe en MongoDB pero no en MySQL"
     elif sql_data and not mongo_data:
         warning = "Personaje existe en MySQL pero no en MongoDB"
-    
+
     return {
         "id": id,
         "vista_mongo": mongo_data,
