@@ -6,3 +6,4 @@ router = APIRouter()
 @router.get("/analitica/perfil/{id}")
 def perfil_dual(id: str):
     return obtener_perfil_dual(id)
+
