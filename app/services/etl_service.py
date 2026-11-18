@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sqlalchemy.dialects.mysql import insert
+from sqlalchemy import text
 import requests
 
 from app import config
@@ -153,7 +154,7 @@ def extraer(cantidad: int) -> dict:
     return {"nuevos": nuevos, "ya_existentes": ya_existentes}
 
 def reset() -> dict: 
-    """C (Reset): borra todo Mongo y vacía (TRUNCATE) la tabla MySQL, sin eliminarla."""
+    """C (Reset): borra todo Mongo y vacía la tabla MySQL con TRUNCATE, sin eliminarla."""
     coleccion = get_mongo_collection()
     mongo_eliminados = coleccion.delete_many({}).deleted_count
 
@@ -161,9 +162,8 @@ def reset() -> dict:
     tabla = Personaje.__table__
 
     with engine.begin() as conexion:
-        resultado = conexion.execute(tabla.select())
-        mysql_eliminadas = len(resultado.fetchall())
-        conexion.execute(tabla.delete())  # TRUNCATE lógico vía DELETE (conserva la tabla)
+        mysql_eliminadas = conexion.execute(text(f"SELECT COUNT(*) FROM {tabla.name}")).scalar()
+        conexion.execute(text(f"TRUNCATE TABLE {tabla.name}"))
 
     return {
         "mongo_docs_eliminados": mongo_eliminados,

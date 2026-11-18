@@ -1,0 +1,62 @@
+{
+ "info": {
+  "name": "Lab Final ETL - Endpoint D (Análisis por columna)",
+  "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+ },
+ "variable": [
+  {
+   "key": "base_url",
+   "value": "http://127.0.0.1:8000"
+  }
+ ],
+ "item": [
+  {
+   "name": "Categórica - casa",
+   "event": [{"listen": "test", "script": {"exec": [
+     "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+     "pm.test(\"Detecta el tipo categorica\", () => pm.expect(pm.response.json().tipo).to.eql(\"categorica\"));"
+   ]}}],
+   "request": {"method": "GET", "url": "{{base_url}}/api/v1/analitica/columna/casa"}
+  },
+  {
+   "name": "Texto libre - nombre",
+   "event": [{"listen": "test", "script": {"exec": [
+     "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+     "pm.test(\"Detecta el tipo texto\", () => pm.expect(pm.response.json().tipo).to.eql(\"texto\"));"
+   ]}}],
+   "request": {"method": "GET", "url": "{{base_url}}/api/v1/analitica/columna/nombre"}
+  },
+  {
+   "name": "Numérica - total_trabajos",
+   "event": [{"listen": "test", "script": {"exec": [
+     "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+     "pm.test(\"Detecta el tipo numerica\", () => pm.expect(pm.response.json().tipo).to.eql(\"numerica\"));"
+   ]}}],
+   "request": {"method": "GET", "url": "{{base_url}}/api/v1/analitica/columna/total_trabajos"}
+  },
+  {
+   "name": "Fecha - fecha_nacimiento",
+   "event": [{"listen": "test", "script": {"exec": [
+     "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+     "pm.test(\"Detecta el tipo fecha\", () => pm.expect(pm.response.json().tipo).to.eql(\"fecha\"));"
+   ]}}],
+   "request": {"method": "GET", "url": "{{base_url}}/api/v1/analitica/columna/fecha_nacimiento"}
+  },
+  {
+   "name": "Booleana - esta_vivo",
+   "event": [{"listen": "test", "script": {"exec": [
+     "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+     "pm.test(\"Detecta el tipo booleana\", () => pm.expect(pm.response.json().tipo).to.eql(\"booleana\"));"
+   ]}}],
+   "request": {"method": "GET", "url": "{{base_url}}/api/v1/analitica/columna/esta_vivo"}
+  },
+  {
+   "name": "Error 400 - columna inexistente",
+   "event": [{"listen": "test", "script": {"exec": [
+     "pm.test(\"Responde 400\", () => pm.response.to.have.status(400));",
+     "pm.test(\"Trae las columnas válidas\", () => pm.expect(pm.response.json().columnas_validas).to.be.an(\"array\"));"
+   ]}}],
+   "request": {"method": "GET", "url": "{{base_url}}/api/v1/analitica/columna/columna_falsa"}
+  }
+ ]
+}
