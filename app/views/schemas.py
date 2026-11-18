@@ -86,3 +86,13 @@ AnalisisColumnaResponse = Annotated[
 class ErrorColumnaResponse(BaseModel):
     mensaje: str
     columnas_validas: list[str]
+
+# ============ Analítica: Endpoint E - Perfil dual (Juan Silva) ============
+from typing import Any, Dict
+
+
+class PerfilDualResponse(BaseModel):
+    id: str
+    vista_mongo: Optional[Dict[str, Any]] = None
+    vista_sql: Optional[Dict[str, Any]] = None
+    warning: Optional[str] = None

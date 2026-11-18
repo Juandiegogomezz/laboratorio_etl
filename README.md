@@ -31,3 +31,11 @@ Archivos:
 - `app/views/schemas.py`: schemas de respuesta del análisis.
 - `validacion_analitica_columna.sql`: consultas para validar los resultados en DBeaver.
 - `postman/Endpoint_D_analisis_columna.postman_collection.json`: colección de Postman con una prueba por tipo y el caso 400.
+
+## Juan Silva — Endpoint E: Perfil Dual
+
+- Schema `PerfilDualResponse` en `app/views/schemas.py`.
+- Consulta MongoDB por `_id` y MySQL por `id_personaje`.
+- Endpoint `GET /api/v1/analitica/perfil/{id}`: retorna vista dual con 4 escenarios posibles (ambas BD, solo Mongo, solo MySQL, 404).
+- Ruta en `app/controllers/analitica_controller.py`.
+- Service en `app/services/perfil_dual_service.py`.
