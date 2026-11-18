@@ -65,9 +65,17 @@ def limpiar_datos(documentos: list) -> pd.DataFrame:
     # Unificar mayúsculas en género (male, Male -> Male)
     df["genero"] = df["genero"].str.title()
 
-    # Fecha: "31 July 1980" -> 1980-07-31. Si es aproximada o vacía queda NULL
+    # Fecha: la API trae texto libre, por ejemplo "Between 1 September 1883 and 31 August 1884".
+    # Se extrae la primera fecha completa (día, mes y año) y se convierte: 1883-09-01.
+    # Si el texto no trae una fecha completa ("Before 1953") queda NULL
+    patron_fecha = r"(\d{1,2} [A-Z][a-z]+,? \d{4})"
+    fecha_texto = (
+        df["fecha_nacimiento"].astype("string")
+        .str.extract(patron_fecha, expand=False)
+        .str.replace(",", "", regex=False)
+    )
     df["fecha_nacimiento"] = pd.to_datetime(
-        df["fecha_nacimiento"], format="%d %B %Y", errors="coerce"
+        fecha_texto, format="%d %B %Y", errors="coerce"
     ).dt.date
 
     # Cualquier NaN/NaT que quede se convierte en None (NULL en MySQL)

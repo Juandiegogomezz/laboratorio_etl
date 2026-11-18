@@ -1,0 +1,316 @@
+{
+  "info": {
+    "name": "Lab Final ETL",
+    "description": "Pipeline ETL con FastAPI - Hogwarts API. Ejecutar en orden con uvicorn corriendo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "ETL",
+      "item": [
+        {
+          "name": "1. Reset",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/etl/reset",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "etl",
+                "reset"
+              ]
+            },
+            "description": "Vacía MongoDB (delete_many) y MySQL (TRUNCATE). Esperado: 200."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Extraer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/etl/extraer",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "etl",
+                "extraer"
+              ]
+            },
+            "description": "API -> MongoDB. Esperado: 201 con nuevos = 50.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cantidad\": 50\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Extraer (idempotencia)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/etl/extraer",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "etl",
+                "extraer"
+              ]
+            },
+            "description": "Segunda vez. Esperado: nuevos = 0, ya_existentes = 50.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cantidad\": 50\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. Transformar",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/etl/transformar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "etl",
+                "transformar"
+              ]
+            },
+            "description": "MongoDB -> Pandas -> MySQL. Esperado: 200 con registros_procesados = 50."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Transformar (idempotencia)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/etl/transformar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "etl",
+                "transformar"
+              ]
+            },
+            "description": "Segunda vez. La tabla debe seguir con 50 filas."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Analítica",
+      "item": [
+        {
+          "name": "6. Columna categórica (casa)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analitica/columna/casa",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analitica",
+                "columna",
+                "casa"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "7. Columna numérica (total_trabajos)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analitica/columna/total_trabajos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analitica",
+                "columna",
+                "total_trabajos"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "8. Columna fecha (fecha_nacimiento)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analitica/columna/fecha_nacimiento",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analitica",
+                "columna",
+                "fecha_nacimiento"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "9. Columna booleana (esta_vivo)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analitica/columna/esta_vivo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analitica",
+                "columna",
+                "esta_vivo"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "10. Columna inexistente (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analitica/columna/no_existe",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analitica",
+                "columna",
+                "no_existe"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "11. Perfil dual",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analitica/perfil/{{perfil_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analitica",
+                "perfil",
+                "{{perfil_id}}"
+              ]
+            },
+            "description": "Cambia la variable perfil_id de la colección por un id que exista (míralo en DBeaver). Esperado: 200 con vista_mongo y vista_sql."
+          },
+          "response": []
+        },
+        {
+          "name": "12. Perfil inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analitica/perfil/no-existe",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analitica",
+                "perfil",
+                "no-existe"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "perfil_id",
+      "value": "PON_AQUI_UN_ID"
+    }
+  ]
+}
