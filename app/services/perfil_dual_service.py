@@ -1,5 +1,5 @@
 from app.database import get_mongo_collection, SessionLocal
-from app.models.entidad_sql import PersonajeHP
+from app.models.entidad_sql import Personaje
 
 def consultar_mongo(id: str):
     """Busca un personaje en MongoDB por su _id."""
@@ -13,8 +13,8 @@ def consultar_mysql(id: str):
     """Busca un personaje en MySQL por su id_personaje."""
     db = SessionLocal()
     try:
-        personaje = db.query(PersonajeHP).filter(
-            PersonajeHP.id_personaje == id
+        personaje = db.query(Personaje).filter(
+            Personaje.id_personaje == id
         ).first()
         if personaje:
             return {
